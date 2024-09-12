@@ -5,6 +5,7 @@ import { Icons } from "./Icons";
 import NavItems from "./NavItems";
 import { buttonVariants } from "./ui/button";
 import Cart from "./Cart";
+import { ModeToggle } from "./ModeToggle";
 
 const Navbar = () => {
   const user = null;
@@ -23,6 +24,9 @@ const Navbar = () => {
                   <Link href="/">
                     <Icons.logo className="h-10 w-10" />
                   </Link>
+                </div>
+                <div className="ml-4">
+                  <ModeToggle />
                 </div>
 
                 {/* UI kit and icons*/}

@@ -1,0 +1,6 @@
+{
+  "watch": ["server.ts", "collections/**/*.ts", "trpc/index.ts"],
+  "exec": "ts-node --project tsconfig.server.json action/server.ts -- -I",
+  "ext": "js ts",
+  "stdin": false
+}

@@ -1,3 +1,5 @@
+//index.ts
+import { InitOptions } from "payload/config";
 import { PRODUCT_CATEGORIES } from "@/config";
 
 type Category = (typeof PRODUCT_CATEGORIES)[number];
@@ -10,3 +12,7 @@ export declare interface NavItemProps {
 }
 
 export type Event = MouseEvent | TouchEvent;
+
+export interface Args {
+  initOptions?: Partial<InitOptions>;
+}
