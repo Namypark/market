@@ -3,19 +3,31 @@ import { Icons } from "@/components/Icons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// import { useToast } from "@/hooks/use-toast";
+
 import { cn } from "@/lib/utils";
 import { accountFormSchema } from "@/lib/validators/account-credentials";
 import { trpc } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, LockIcon, MailIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z, ZodError } from "zod";
-const Signup = () => {
+import { z } from "zod";
+
+const SignIn = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isSeller = searchParams.get("as") === "seller";
+  const origin = searchParams.get("origin");
+
+  const continueAsSeller = () => {
+    router.push("?as=seller");
+  };
+  const continueAsBuyer = () => {
+    router.replace("/sign-in", undefined);
+  };
+  //   const toEmail = searchParams.get("to");
 
   const {
     register,
@@ -24,25 +36,25 @@ const Signup = () => {
   } = useForm<z.infer<typeof accountFormSchema>>({
     resolver: zodResolver(accountFormSchema),
   });
-  const { mutateAsync } = trpc.auth.createPayloadUser.useMutation({
-    onError: (err) => {
-      if (err.data?.code === "CONFLICT") {
-        toast.error("There seems to be an error", {
-          description:
-            "An account with this email already exists, sign-in instead?",
-        });
+  const { mutateAsync: signIn, isPending } = trpc.auth.SignIn.useMutation({
+    onSuccess: () => {
+      toast.success("signed in successfully");
+
+      if (origin) {
+        router.push(`/${origin}`);
         return;
       }
-      if (err instanceof ZodError) {
-        toast.error(err.issues[0].message);
+      if (isSeller) {
+        router.push("/sell");
         return;
       }
+      router.push("/");
+      router.refresh();
     },
-    onSuccess: ({ sentToEmail }) => {
-      toast.success("Your account has ben created successfully", {
-        description: "Please check your the link sent to verify your account",
-      });
-      router.push(`/verify-email?to=${sentToEmail}`);
+    onError: (err) => {
+      if (err.data?.code === "UNAUTHORIZED") {
+        toast.error("Invalid email or password");
+      }
     },
   });
 
@@ -50,22 +62,22 @@ const Signup = () => {
     email,
     password,
   }: z.infer<typeof accountFormSchema>) => {
-    return await mutateAsync({ email, password });
+    return await signIn({ email, password });
   };
   return (
     <div className="container relative flex pt-20 flex-col items-center justify-center lg:px-0">
       <div className="mx-auto w-full justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col items-center space-y-2 text-center">
           <Icons.logo className="h-20" />
-          <h1 className="text-2xl font-bold">Create an Account</h1>
+          <h1 className="text-2xl font-bold">Sign in to your account</h1>
           <Link
-            href="/sign-in"
+            href="/sign-up"
             className={buttonVariants({
               variant: "link",
               className: "gap-1.5",
             })}
           >
-            Already have an account? sign in
+            Don&apos;t have an account? sign up
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -105,13 +117,45 @@ const Signup = () => {
                   </p>
                 )}
               </div>
-              <Button type="submit">Sign up</Button>
+              <Button type="submit">Sign in</Button>
             </div>
           </form>
+
+          <div className="relative">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 flex items-center"
+            >
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                or
+              </span>
+            </div>
+          </div>
+          {isSeller ? (
+            <Button
+              onClick={continueAsBuyer}
+              // className="secondary"
+              variant="secondary"
+              disabled={isPending}
+            >
+              Continue as customer
+            </Button>
+          ) : (
+            <Button
+              onClick={continueAsSeller}
+              className="transition-all duration-500 ease-in-out"
+              variant="secondary"
+              disabled={isPending}
+            >
+              continue as seller
+            </Button>
+          )}
         </div>
       </div>
     </div>
   );
 };
-
-export default Signup;
+export default SignIn;

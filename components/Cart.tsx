@@ -23,7 +23,7 @@ import { useTheme } from "next-themes";
 
 const Cart = () => {
   const { resolvedTheme, theme } = useTheme();
-  console.log(theme);
+
   const itemCount = 0;
   const fee = 20;
   return (
@@ -87,13 +87,16 @@ const Cart = () => {
           <div className="flex h-full flex-col items-center justify-center space-y-1">
             <div aria-hidden="true" className="relative mb-4 h-60 w-60">
               <Image
-                src={
-                  theme === "dark"
-                    ? "/normal-hippo-dark.png"
-                    : "/hippo-empty-cart.png"
-                }
-                alt="empty shopping cart hippo"
+                src={`/hippo-empty-cart.png`}
                 fill
+                alt="hippo sent email"
+                className="dark:hidden" // Shown only in light theme
+              />
+              <Image
+                src={`/normal-hippo-dark.png`}
+                fill
+                alt="hippo sent email"
+                className="hidden dark:block" // Shown only in dark theme
               />
             </div>
             <div className="text-xl font-medium">Your cart is empty</div>

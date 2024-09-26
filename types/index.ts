@@ -16,3 +16,9 @@ export type Event = MouseEvent | TouchEvent;
 export interface Args {
   initOptions?: Partial<InitOptions>;
 }
+
+export interface PageProps {
+  searchParams: {
+    [key: string]: string | string[] | undefined;
+  };
+}

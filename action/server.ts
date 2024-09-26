@@ -10,18 +10,25 @@
 	•	Start server: Starts the Express server on the PORT specified in the environment or defaults to 3000.
 
  */
-import { InitOptions } from "payload/config";
-import payload from "payload";
-import { getPayLoadClient } from "./get-payload";
-import { nextApp, nextHandler } from "../next-utils";
 import { Request, Response } from "express";
+import * as trpcExpress from "@trpc/server/adapters/express";
+import { getPayLoadClient } from "./get-payload";
+import { appRouter } from "../trpc";
+import { nextApp, nextHandler } from "../next-utils";
 
 const express = require("express");
 require("dotenv").config();
 const app = express();
 
 const PORT = Number(process.env.PORT) || 3000;
-
+const createContext = ({
+  req,
+  res,
+}: trpcExpress.CreateExpressContextOptions) => ({
+  req,
+  res,
+});
+export type ExpressContext = Awaited<ReturnType<typeof createContext>>;
 const start = async () => {
   const payload = await getPayLoadClient({
     initOptions: {
@@ -31,12 +38,21 @@ const start = async () => {
       },
     },
   });
+  app.use(
+    "/api/trpc",
+    trpcExpress.createExpressMiddleware({
+      router: appRouter,
+      createContext,
+    })
+  );
   app.use((req: Request, res: Response) => nextHandler(req, res));
   nextApp.prepare().then(() => {
     payload.logger.info("Next.js started");
 
     app.listen(PORT, async () => {
-      payload.logger.info(`Next js App URL: ${process.env.NEXT_PUBLIC_URL}`);
+      payload.logger.info(
+        `Next js App URL: ${process.env.NEXT_PUBLIC_SERVER_URL}`
+      );
     });
   });
 };

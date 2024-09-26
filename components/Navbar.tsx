@@ -6,10 +6,17 @@ import NavItems from "./NavItems";
 import { buttonVariants } from "./ui/button";
 import Cart from "./Cart";
 import { ModeToggle } from "./ModeToggle";
+import { getServerSideUser } from "@/lib/payload-utils";
+import { cookies } from "next/headers";
+import UserAccountNav from "./UserAccountNav";
+import { LogIn } from "lucide-react";
 
-const Navbar = () => {
-  const user = null;
-
+const Navbar = async () => {
+  const nextCookies = cookies();
+  const { user } = await getServerSideUser(nextCookies);
+  console.log(user);
+  // const user = null;
+  await getServerSideUser(nextCookies);
   return (
     <div className="bg-background sticky z-50 top-0 inset-x-0 h-16">
       <header className="">
@@ -43,6 +50,7 @@ const Navbar = () => {
                           variant: "ghost",
                         })} duration-500 ease-in-out transition-all rounded-md`}
                       >
+                        <LogIn className="mr-2 h-4 w-4" />
                         Sign in
                       </Link>
                     )}
@@ -53,7 +61,7 @@ const Navbar = () => {
                       />
                     )}
                     {user ? (
-                      <p></p>
+                      <UserAccountNav user={user} />
                     ) : (
                       <Link
                         href="/sign-up"
